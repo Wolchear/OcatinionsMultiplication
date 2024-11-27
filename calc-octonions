@@ -1,0 +1,187 @@
+#!/usr/bin/perl
+#Nikita Pavliukovec Bioinformatika Ig.
+# Progama daugina oktanionus.
+# Dauginimo principas:
+# Dalinam kiekviena oktaniona i 2
+# o(e0,e1,e2,e3,e4,e5,e6,e7)
+# o(q1,q2)
+# o2(e02,e12,e22,e32,e42,e52,e62,e72)
+# o2(q3,q4)
+# Dauginimo formule
+# o3(Q1-Q2, Q3+Q4)
+# Q1(q1*q3)
+# Q2((q4*)*q2)  (q4*) = (e42,-e52,-e62,-e72)
+# Q3(q4 *q1)
+# Q4(q2 * (q3*))
+
+	
+use strict;
+use warnings;
+
+sub output
+{
+	print "#@ 1 i j k l il jl kl\n ";	
+	for(@{$_[0]}) 
+	{
+   		 print $_ . " ";
+	}
+
+	for(@{$_[1]}) 
+	{
+   		 print $_ . " ";
+	}
+	print "\n";
+	
+}
+
+sub octonion_to_quaternions
+ {
+    my ($octonion) = @_;
+    my $quaternion1 = [ $octonion->[0], $octonion->[1],
+						 $octonion->[2], $octonion->[3] ];
+    my $quaternion2 = [ $octonion->[4], $octonion->[5],
+						 $octonion->[6], $octonion->[7] ];
+
+    return ($quaternion1, $quaternion2);
+}
+
+sub conjugation
+{
+	my ($quaternion) = @_;
+	my $conjugated = [ $quaternion->[0],-$quaternion->[1],
+				-$quaternion->[2], -$quaternion->[3] ];
+				
+	return $conjugated;
+}
+
+sub quaternions_multipy
+{
+	my ($q1,$q2) =@_;
+	
+	my $w1 = $q1->[0];
+    my $x1 = $q1->[1];
+    my $y1 = $q1->[2];
+    my $z1 = $q1->[3];
+
+    my $w2 = $q2->[0];
+    my $x2 = $q2->[1];
+    my $y2 = $q2->[2];
+    my $z2 = $q2->[3];
+
+    my $result_w = $w1 * $w2 - $x1 * $x2 - $y1 * $y2 - $z1 * $z2;
+    my $result_x = $w1 * $x2 + $x1 * $w2 + $y1 * $z2 - $z1 * $y2;
+    my $result_y = $w1 * $y2 - $x1 * $z2 + $y1 * $w2 + $z1 * $x2;
+    my $result_z = $w1 * $z2 + $x1 * $y2 - $y1 * $x2 + $z1 * $w2;
+
+    return [$result_w, $result_x, $result_y, $result_z];
+}
+
+sub quaternions_difference
+{
+	my ($q1,$q2) =@_;
+	
+	my $w1 = $q1->[0];
+    my $x1 = $q1->[1];
+    my $y1 = $q1->[2];
+    my $z1 = $q1->[3];
+
+    my $w2 = $q2->[0];
+    my $x2 = $q2->[1];
+    my $y2 = $q2->[2];
+    my $z2 = $q2->[3];
+
+    my $result_w = $w1 - $w2;
+    my $result_x = $x1 - $x2;
+    my $result_y = $y1 - $y2;
+    my $result_z = $z1 - $z2;
+
+    return [$result_w, $result_x, $result_y, $result_z];
+}
+
+sub quaternions_sum
+{
+	my ($q1,$q2) =@_;
+	
+	my $w1 = $q1->[0];
+    my $x1 = $q1->[1];
+    my $y1 = $q1->[2];
+    my $z1 = $q1->[3];
+
+    my $w2 = $q2->[0];
+    my $x2 = $q2->[1];
+    my $y2 = $q2->[2];
+    my $z2 = $q2->[3];
+
+    my $result_w = $w1 + $w2;
+    my $result_x = $x1 + $x2;
+    my $result_y = $y1 + $y2;
+    my $result_z = $z1 + $z2;
+
+    return [$result_w, $result_x, $result_y, $result_z];
+}
+
+
+$/ = "\n#@";
+while(<>)
+{
+	
+	#dalom gauta bloka i 3 dalis
+	my @data = split(/\n/, $_);
+	#Jeigu vienas iš octanionų yra tusčias tai stabdom programą
+	if ($data[1] eq "" || $data[2] eq "")
+	{
+		die "1 ir/arba 2 octanionas yra tusčias, patikrinkite Jūsų duomėnis\n";
+	};
+	#uzrasom oktanionus kaip tekstine eilute
+	my ($complex1,$complex2) = ($data[1],$data[2]);
+	#uzrasom skaicius i massiva
+	my @complex1 = split(/\s+/, $complex1);
+	#salinom tarpa pradzioje
+	shift @complex1;
+	for(@complex1)
+	{
+		if($_ !~ /[-+]?(?:\d+(\.\d*)?|\.\d+)(?:[eE][-+]?\d+)?/)
+		{
+				
+			die "1 octanione buvo atrastas netinkamas simbolius, naudokite tik skaičius ir patikrinkite Jūsų duomėnis\n";
+			
+		}
+	}
+	
+	if(scalar @complex1 != 8)
+	{
+		die "1 octanionas nera sudarytas iš 8 dalių, patikrinkite Jūsų duomėnis\n"
+	};
+	my @complex2 = split(/\s+/, $complex2);
+	shift @complex2;
+	if(scalar @complex2 != 8)
+	{
+		
+		die "2 octanionas nera sudarytas iš 8 dalių, patikrinkite Jūsų duomėnis\n";
+	};
+	for(@complex2)
+	{
+		if($_ !~ /[-+]?(?:\d+(\.\d*)?|\.\d+)(?:[eE][-+]?\d+)?/)
+		{
+				
+			die "2 octanione buvo atrastas netinkamas simbolius, naudokite tik skaičius ir patikrinkite Jūsų duomėnis\n";
+			
+		}
+	}
+	#sudarom kvatreionus
+	my ($quaternion1,$quaternion2) = octonion_to_quaternions(\@complex1);
+	my ($quaternion3,$quaternion4) = octonion_to_quaternions(\@complex2);
+	
+	my @complex3;
+	#skaiciavimai
+	$complex3[0]=quaternions_difference((quaternions_multipy($quaternion1,$quaternion3)),
+(quaternions_multipy(conjugation($quaternion4),$quaternion2)));
+	$complex3[1]=quaternions_sum((quaternions_multipy($quaternion4,$quaternion1)),
+	(quaternions_multipy($quaternion2,conjugation($quaternion3))));
+	
+	#output
+	output(@complex3);
+}
+$/ = "\n";
+
+
